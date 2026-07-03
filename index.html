@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Stream Free – Home</title>
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css" />
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+</head>
+<body>
+
+  <!-- ===== TOAST ===== -->
+  <div id="toast" class="toast"></div>
+
+  <!-- ===== CONFIRM MODAL ===== -->
+  <div id="confirmModal" class="modal-confirm">
+    <div class="modal-box">
+      <h3>Are you sure?</h3>
+      <p style="opacity:0.7;font-size:0.95rem;">This action cannot be undone.</p>
+      <div class="actions">
+        <button class="btn-secondary" onclick="closeConfirm()">Cancel</button>
+        <button id="confirmDeleteBtn" class="btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SEARCH OVERLAY ===== -->
+  <div id="searchOverlay" class="search-overlay">
+    <div style="max-width:700px;margin:0 auto;">
+      <div style="display:flex;gap:12px;align-items:center;">
+        <input type="text" id="searchInput" placeholder="Search movies, series, anime..." autofocus />
+        <button onclick="closeSearch()" style="background:none;border:none;color:#fff;font-size:1.8rem;cursor:pointer;">&times;</button>
+      </div>
+      <div id="searchResults" class="search-results"></div>
+    </div>
+  </div>
+
+  <!-- ===== MENU OVERLAY ===== -->
+  <div id="menuOverlay" class="menu-overlay">
+    <div class="menu-content">
+      <button class="close-btn" onclick="closeMenu()">&times;</button>
+      <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:4px;">Browse</h2>
+      <p style="opacity:0.6;font-size:0.9rem;">Filter by category</p>
+      <div class="filter-group" id="menuFilters">
+        <button class="active" data-filter="all">All</button>
+        <button data-filter="webseries">Web Series</button>
+        <button data-filter="anime">Anime</button>
+      </div>
+      <div id="menuContentGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-top:16px;"></div>
+    </div>
+  </div>
+
+  <!-- ===== BOTTOM NAV ===== -->
+<!-- ===== BOTTOM NAVIGATION ===== -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="nav-btn" data-page="home" onclick="navigateTo('home')">
+    <i class="fas fa-home"></i>
+    <span>Home</span>
+  </button>
+  <button class="nav-btn" data-page="menu" onclick="openMenu()">
+    <i class="fas fa-th-large"></i>
+    <span>Menu</span>
+  </button>
+  <button class="nav-btn" data-page="watchlist" onclick="navigateTo('watchlist')">
+    <i class="fas fa-bookmark"></i>
+    <span>Watchlist</span>
+  </button>
+  <button class="nav-btn" data-page="profile" onclick="navigateTo('profile')">
+    <i class="fas fa-user"></i>
+    <span>Profile</span>
+  </button>
+</nav>
+
+  <!-- ===== HOME PAGE CONTENT ===== -->
+  <div id="page-home" class="page-content" style="display:block;">
+
+    <!-- Header -->
+    <header style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px;position:sticky;top:0;z-index:100;background:rgba(11,11,11,0.85);backdrop-filter:blur(12px);">
+      <h1 style="font-size:1.6rem;font-weight:900;letter-spacing:-1px;">
+        <span style="color:#E50914;">Stream</span>Free
+      </h1>
+      <div style="display:flex;gap:16px;align-items:center;">
+
+      </div>
+    </header>
+
+    <!-- Hero Banner -->
+    <div id="heroBanner" class="hero-banner">
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">
+        <i class="fas fa-spinner fa-spin fa-2x"></i>
+      </div>
+    </div>
+
+    <!-- Continue Watching -->
+    <section style="padding:20px 20px 0;">
+      <div class="section-header">
+        <h2><i class="fas fa-play-circle" style="color:#E50914;margin-right:8px;"></i>Continue Watching</h2>
+      </div>
+      <div id="continueWatchingRow" class="scroll-row"></div>
+    </section>
+
+    <!-- New to Our Platform -->
+    <section style="padding:20px 20px 0;">
+      <div class="section-header">
+        <h2><i class="fas fa-star" style="color:#E50914;margin-right:8px;"></i>New to Our Platform</h2>
+      </div>
+      <div id="newContentRow" class="scroll-row"></div>
+    </section>
+
+    <!-- Genre Rows -->
+    <div id="genreRows" style="padding:0 20px 20px;"></div>
+
+    <div style="height:20px;"></div>
+  </div>
+
+  <!-- ===== WATCHLIST PAGE (hidden) ===== -->
+  <div id="page-watchlist" class="page-content" style="display:none;padding:20px;">
+    <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:16px;"><i class="fas fa-bookmark" style="color:#E50914;margin-right:10px;"></i>My Watchlist</h2>
+    <div id="watchlistGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;"></div>
+    <div id="watchlistEmpty" style="text-align:center;padding:60px 0;opacity:0.5;">
+      <i class="fas fa-bookmark" style="font-size:3rem;display:block;margin-bottom:12px;"></i>
+      <p>No items in your watchlist yet.</p>
+    </div>
+  </div>
+
+  <!-- ===== PROFILE PAGE (hidden) ===== -->
+  <div id="page-profile" class="page-content" style="display:none;padding:20px;">
+    <div id="profileContent" style="max-width:500px;margin:0 auto;"></div>
+
+    <!-- Settings -->
+<button class="profile-action-btn" onclick="window.location.href='settings.html'">
+  <i class="fas fa-cog"></i> Settings
+</button>
+
+<!-- Terms & Policy -->
+<button class="profile-action-btn" onclick="window.location.href='termsandpolicy.html'">
+  <i class="fas fa-file-alt"></i> Terms & Policy
+</button>
+
+<!-- Help -->
+<button class="profile-action-btn" onclick="window.location.href='help.html'">
+  <i class="fas fa-question-circle"></i> Help
+</button>
+  </div>
+
+
+
+<!-- ===== LOGIN MODAL ===== -->
+<div id="loginModal" class="auth-modal">
+  <div class="auth-modal-content">
+    <button class="auth-close-btn" onclick="closeLoginModal()">&times;</button>
+    <div class="auth-modal-header">
+      <div class="auth-icon">
+        <i class="fas fa-sign-in-alt"></i>
+      </div>
+      <h2>Welcome Back</h2>
+      <p>Login to continue watching</p>
+    </div>
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="loginEmail">Email Address</label>
+        <input type="email" id="loginEmail" placeholder="Enter your email" required autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter your password" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="auth-submit-btn" id="loginSubmitBtn">
+        <i class="fas fa-sign-in-alt"></i> Login
+      </button>
+    </form>
+    <p class="auth-switch">
+      Don't have an account? <span onclick="switchAuth('signup')">Create one</span>
+    </p>
+  </div>
+</div>
+
+<!-- ===== SIGNUP MODAL ===== -->
+<div id="signupModal" class="auth-modal">
+  <div class="auth-modal-content">
+    <button class="auth-close-btn" onclick="closeSignupModal()">&times;</button>
+    <div class="auth-modal-header">
+      <div class="auth-icon">
+        <i class="fas fa-user-plus"></i>
+      </div>
+      <h2>Create Account</h2>
+      <p>Join StreamVerse today</p>
+    </div>
+    <form id="signupForm" onsubmit="handleSignup(event)">
+      <div class="form-group">
+        <label for="signupName">Full Name</label>
+        <input type="text" id="signupName" placeholder="Enter your name" required autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label for="signupEmail">Email Address</label>
+        <input type="email" id="signupEmail" placeholder="Enter your email" required autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="signupPassword">Password</label>
+        <input type="password" id="signupPassword" placeholder="Min 6 characters" required minlength="6" autocomplete="new-password" />
+      </div>
+      <button type="submit" class="auth-submit-btn" id="signupSubmitBtn">
+        <i class="fas fa-user-plus"></i> Create Account
+      </button>
+    </form>
+    <p class="auth-switch">
+      Already have an account? <span onclick="switchAuth('login')">Login here</span>
+    </p>
+  </div>
+</div>
+
+  <!-- Scripts -->
+  <script src="firebase.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Home-specific initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      renderHome();
+      // Load continue watching from localStorage
+      const saved = localStorage.getItem('continueWatching');
+      if (saved) {
+        try { state.continueWatching = JSON.parse(saved); } catch (e) {}
+      }
+      // Bottom nav clicks
+      document.querySelectorAll('.bottom-nav button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.dataset.tab;
+          if (tab === 'home') goToHome();
+          else if (tab === 'menu') openMenu();
+          else if (tab === 'watchlist') goToWatchlist();
+          else if (tab === 'profile') goToProfile();
+        });
+      });
+      // Search input
+      document.getElementById('searchInput').addEventListener('input', handleSearch);
+      // Menu filters
+      document.querySelectorAll('#menuFilters button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#menuFilters button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderMenuContent(btn.dataset.filter);
+        });
+      });
+      // Confirm modal delete
+      document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        if (window._confirmCb) window._confirmCb();
+        closeConfirm();
+      });
+    });
+  </script>
+</body>
+</html>

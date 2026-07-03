@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>StreamVerse – Player</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+  <!-- HLS.js -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@0.14.17/dist/hls.min.js"></script>
+</head>
+<body>
+
+  <div id="toast" class="toast"></div>
+
+  <div style="padding:16px 20px 0;">
+    <button onclick="goBackFromPlayer()" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;">
+      <i class="fas fa-arrow-left"></i> Back
+    </button>
+  </div>
+
+  <div id="page-player" style="padding:16px 20px 20px;">
+    <div class="player-wrapper">
+      <video id="playerVideo" controls playsinline></video>
+    </div>
+
+    <!-- Player Info -->
+    <div id="playerInfo" style="margin-top:16px;">
+      <div style="display:flex;gap:16px;align-items:flex-start;">
+        <img id="playerPoster" src="" alt="" style="width:70px;height:100px;object-fit:cover;border-radius:10px;flex-shrink:0;" />
+        <div>
+          <h3 id="playerTitle" style="font-size:1.2rem;font-weight:700;"></h3>
+          <p id="playerDesc" style="opacity:0.7;font-size:0.9rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></p>
+          <div id="playerGenres" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;">
+        <button onclick="toggleWatchlistPlayer()" class="btn-secondary" style="padding:8px 18px;font-size:0.85rem;"><i class="fas fa-bookmark"></i> Watchlist</button>
+        <button onclick="shareContent()" class="btn-secondary" style="padding:8px 18px;font-size:0.85rem;"><i class="fas fa-share-alt"></i> Share</button>
+      </div>
+    </div>
+
+    <!-- Episode Navigation (for series) -->
+    <div id="playerEpisodeNav" style="margin-top:20px;"></div>
+
+        <!-- Suggestions -->
+    <section style="margin-top:24px;">
+      <h3 style="font-weight:700;font-size:1.1rem;margin-bottom:12px;">More Like This</h3>
+      <div id="playerSuggestions" class="scroll-row"></div>
+    </section>
+
+  </div>
+
+  <!-- ===== BOTTOM NAVIGATION ===== -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="nav-btn" data-page="home" onclick="navigateTo('home')">
+    <i class="fas fa-home"></i>
+    <span>Home</span>
+  </button>
+  <button class="nav-btn" data-page="menu" onclick="openMenu()">
+    <i class="fas fa-th-large"></i>
+    <span>Menu</span>
+  </button>
+  <button class="nav-btn" data-page="watchlist" onclick="navigateTo('watchlist')">
+    <i class="fas fa-bookmark"></i>
+    <span>Watchlist</span>
+  </button>
+  <button class="nav-btn" data-page="profile" onclick="navigateTo('profile')">
+    <i class="fas fa-user"></i>
+    <span>Profile</span>
+  </button>
+</nav>
+
+  <script src="firebase.js"></script>
+  <script src="app.js"></script>
+  <script src="player.js"></script>
+  <script>
+    // Load player data from URL params
+    const params = new URLSearchParams(window.location.search);
+    const contentId = params.get('contentId');
+    const seasonIdx = parseInt(params.get('season')) || 0;
+    const episodeIdx = parseInt(params.get('episode')) || 0;
+    if (contentId) {
+      initPlayer(contentId, seasonIdx, episodeIdx);
+    } else {
+      document.getElementById('playerInfo').innerHTML = '<p style="opacity:0.5;">No content specified.</p>';
+    }
+    // Toast, confirm etc. are defined in app.js
+  </script>
+</body>
+</html>

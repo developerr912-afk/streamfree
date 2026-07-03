@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>StreamVerse – Watch</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+</head>
+<body>
+
+  <!-- ===== TOAST & CONFIRM MODAL (unchanged) ===== -->
+  <div id="toast" class="toast"></div>
+  <div id="confirmModal" class="modal-confirm">
+    <div class="modal-box">
+      <h3>Are you sure?</h3>
+      <p style="opacity:0.7;font-size:0.95rem;">This action cannot be undone.</p>
+      <div class="actions">
+        <button class="btn-secondary" onclick="closeConfirm()">Cancel</button>
+        <button id="confirmDeleteBtn" class="btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FIXED HEADER – with blur, no solid black strap ===== -->
+  <div id="app-header">
+    <button onclick="goToHome()">
+      <i class="fas fa-arrow-left"></i> Back to Home
+    </button>
+  </div>
+
+  <!-- ===== WATCH DETAIL CONTENT ===== -->
+  <div id="watchDetail"></div>
+
+  <!-- ===== BOTTOM NAVIGATION ===== -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-btn" data-page="home" onclick="navigateTo('home')">
+      <i class="fas fa-home"></i>
+      <span>Home</span>
+    </button>
+    <button class="nav-btn" data-page="menu" onclick="openMenu()">
+      <i class="fas fa-th-large"></i>
+      <span>Menu</span>
+    </button>
+    <button class="nav-btn" data-page="watchlist" onclick="navigateTo('watchlist')">
+      <i class="fas fa-bookmark"></i>
+      <span>Watchlist</span>
+    </button>
+    <button class="nav-btn" data-page="profile" onclick="navigateTo('profile')">
+      <i class="fas fa-user"></i>
+      <span>Profile</span>
+    </button>
+  </nav>
+
+  <script src="firebase.js"></script>
+  <script src="app.js"></script>
+  <script src="watch.js"></script>
+  <script>
+    // Bottom nav active state update (optional)
+    document.querySelectorAll('.bottom-nav .nav-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.bottom-nav .nav-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // Confirm delete button
+    document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+      if (window._confirmCb) window._confirmCb();
+      closeConfirm();
+    });
+
+    // Load content from URL param ?id=xxx
+    const params = new URLSearchParams(window.location.search);
+    const contentId = params.get('id');
+    if (contentId) {
+      loadWatchDetail(contentId);
+    } else {
+      document.getElementById('watchDetail').innerHTML = '<p style="padding:40px;text-align:center;opacity:0.5;">No content specified.</p>';
+    }
+  </script>
+</body>
+</html>
